@@ -1,103 +1,135 @@
-const velocity = document.getElementById("velocity");
-const alpha = document.getElementById("zavit");
-const timeOutput = document.getElementById("timeInAir");
-const distanceOutput = document.getElementById("totalDistance");
-const maxHeightOutput = document.getElementById("maxHeight");
+const velocityElement = document.getElementById("velocity");
+const alphaInDegreesElement = document.getElementById("alpha");
+const timeOutputElement = document.getElementById("timeInAir");
+const distanceOutputElement = document.getElementById("totalDistance");
+const maxHeightOutputElement = document.getElementById("maxHeight");
 // for graph
 var xPoints = [];
 var yPoints = [];
-function calc() {
-  // check if input boxes are not full
-  if (velocity.value.length === 0 && alpha.value.length === 0) {
+// check if input data exists
+function checkIfInputExists() {
+  if (
+    velocityElement.value.length === 0 &&
+    alphaInDegreesElement.value.length === 0
+  ) {
     alert("Please fill the requsted parameters");
-    return 
-  } else if (velocity.value.length === 0) {
+    return false;
+  } else if (velocityElement.value.length === 0) {
     alert("Please enter velocity parameter");
-    return
-  } else if (velocity.value > 100000000) {
-    alert("invalid velocity !");
-    return
-  } else if (alpha.value.length === 0) {
+    return false;
+  } else if (alphaInDegreesElement.value.length === 0) {
     alert("please enter alpha parameter");
-    return
-  } else if (velocity.value < 0 && alpha.value < 0) {
-    alert("velocity and alpha must be postive numbers ! ");
-    return
-  } else if (velocity.value < 0) {
-    alert("invalid velocity ! must be a postive number");
-    return
-  } else if (alpha.value < 0) {
-    alert("invalid alpha ! must be a postive number");
-    return
-  } else if (alpha.value > 90) {
-    alert("alpha must be below 90 !");
-    return
+    return false;
   } else {
-    const zavit = (parseFloat(alpha.value) * Math.PI) / 180.0;
-    const time =
-      (2 * parseFloat(velocity.value) * Math.sin(parseFloat(zavit))) / 9.81;
-    timeOutput.innerHTML = `time: ${time.toFixed(2).toString()} (sec)`;
-    const distance =
-      (Math.pow(parseFloat(velocity.value), 2) *
-        Math.sin(2 * parseFloat(zavit))) /
-      9.81;
-    distanceOutput.innerHTML = `total distance: ${distance
-      .toFixed(2)
-      .toString()} (m)`;
-    const maxHeight =
-      Math.pow(parseFloat(velocity.value) * Math.sin(parseFloat(zavit)), 2) /
-      (2 * 9.81);
-    maxHeightOutput.innerHTML = `max height: ${maxHeight
-      .toFixed(2)
-      .toString()} (m)`;
-    var timeStamp = time / 10;
-    var currentTime = 0;
-    var xPoint = 0;
-    var yPoint = 0;
-    for (let i = 0; i <= 10; i++) {
-      xPoint = velocity.value * Math.cos(zavit) * currentTime;
-      yPoint =
-        velocity.value * Math.sin(zavit) * currentTime -
-        (9.81 * Math.pow(currentTime, 2)) / 2;
-      xPoints[i] = xPoint;
-      yPoints[i] = yPoint;
-      currentTime = currentTime + timeStamp;
-    }
-    document.getElementById("calc").addEventListener("click", createChart);
-    document.getElementById("calc").addEventListener("click", showTable);
-    document.getElementById("calc").addEventListener("click", animation);
+    return true;
   }
 }
-// clear input boxes and output div
-function clear() {
-  velocity.value = "";
-  alpha.value = "";
-  timeOutput.innerHTML = "";
-  distanceOutput.innerHTML = "";
-  maxHeightOutput.innerHTML = "";
-  document.getElementById("results-container").style.display = "none";
-  document.getElementById("calc").removeEventListener("click", createChart);
-  document.getElementById("calc").removeEventListener("click", showTable);
-  document.getElementById("calc").removeEventListener("click", animation);
+// check if input data is valid
+function checkValidInput(velocityValue, alphaDegreesValue) {
+  if (velocityValue > 100000000) {
+    alert("invalid velocity !");
+    return false;
+  } else if (velocityValue < 0 && alphaDegreesValue < 0) {
+    alert("velocity and alpha must be postive numbers ! ");
+    return false;
+  } else if (velocityValue < 0) {
+    alert("invalid velocity ! must be a postive number");
+    return false;
+  } else if (alphaDegreesValue < 0) {
+    alert("invalid alpha ! must be a postive number");
+    return false;
+  } else if (alphaDegreesValue > 90) {
+    alert("alpha must be below 90 !");
+    return false;
+  } else {
+    return true;
+  }
 }
+// process data
+function calc() {
+  const velocityValue = parseInt(velocityElement.value);
+  const alphaInDegreesValue = parseInt(alphaInDegreesElement.value);
+  if (
+    !checkIfInputExists() ||
+    !checkValidInput(velocityValue, alphaInDegreesValue)
+  )
+    return;
+  const alphaInRadiansValue =
+    (parseFloat(alphaInDegreesValue) * Math.PI) / 180.0;
+  const timeInAir =
+    (2 *
+      parseFloat(velocityValue) *
+      Math.sin(parseFloat(alphaInRadiansValue))) /
+    9.81;
+  const distance =
+    (Math.pow(parseFloat(velocityValue), 2) *
+      Math.sin(2 * parseFloat(alphaInRadiansValue))) /
+    9.81;
+  const maxHeight =
+    Math.pow(
+      parseFloat(velocityValue) * Math.sin(parseFloat(alphaInRadiansValue)),
+      2
+    ) /
+    (2 * 9.81);
+  const numberOfDataPoints = 10;
+  const timeStamp = timeInAir / numberOfDataPoints;
+  let currentDataPoint = 0;
+  for (let i = 0; i <= numberOfDataPoints; i++) {
+    const xPoint =
+      velocityValue * Math.cos(alphaInRadiansValue) * currentDataPoint;
+    const yPoint =
+      velocityValue * Math.sin(alphaInRadiansValue) * currentDataPoint -
+      (9.81 * Math.pow(currentDataPoint, 2)) / 2;
+    xPoints[i] = xPoint;
+    yPoints[i] = yPoint;
+    currentDataPoint = currentDataPoint + timeStamp;
+  }
+  createTable(timeInAir, distance, maxHeight);
+  document.getElementById("calc").addEventListener("click", () => {
+    showTable();
+    createChart();
+    animation();
+  });
+}
+// clear input boxes and output elements
+function clear() {
+  velocityElement.value = "";
+  alphaInDegreesElement.value = "";
+  timeOutputElement.innerHTML = "";
+  distanceOutputElement.innerHTML = "";
+  maxHeightOutputElement.innerHTML = "";
+  document.getElementById("results-container").style.display = "none";
+  document.getElementById("calc").removeEventListener("click", () => {
+    showTable();
+    createChart();
+    animation();
+  });
+}
+// clear event
 document.getElementById("clear").addEventListener("click", clear);
-
+// interpolate data to table
+function createTable(timeInAir, distance, maxHeight) {
+  timeOutputElement.innerHTML = `time: ${timeInAir
+    .toFixed(2)
+    .toString()} (sec)`;
+  distanceOutputElement.innerHTML = `total distance: ${distance
+    .toFixed(2)
+    .toString()} (m)`;
+  maxHeightOutputElement.innerHTML = `max height: ${maxHeight
+    .toFixed(2)
+    .toString()} (m)`;
+}
 function showTable() {
   document.getElementById("results-container").style.display = "block";
 }
-
-function animation() {
-  document.getElementById("results-container").className = "results";
-}
-
 function createChart() {
-  var trace = {
+  const trace = {
     x: xPoints,
     y: yPoints,
     type: "scatter",
   };
-  var data = [trace];
-  var layout = {
+  const data = [trace];
+  const layout = {
     title: "Trejectory graph",
     autosize: true,
     xaxis: {
@@ -107,9 +139,12 @@ function createChart() {
       autorange: true,
     },
   };
-  var update = {
+  const update = {
     height: 250,
   };
   Plotly.newPlot("chart", data, layout);
   Plotly.relayout("chart", update);
+}
+function animation() {
+  document.getElementById("results-container").className = "results";
 }
