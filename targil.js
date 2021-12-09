@@ -3,9 +3,6 @@ const alphaInDegreesElement = document.getElementById("alpha");
 const timeOutputElement = document.getElementById("timeInAir");
 const distanceOutputElement = document.getElementById("totalDistance");
 const maxHeightOutputElement = document.getElementById("maxHeight");
-// for graph
-var xPoints = [];
-var yPoints = [];
 // check if input data exists
 function checkIfInputExists() {
   if (
@@ -47,6 +44,9 @@ function checkValidInput(velocityValue, alphaDegreesValue) {
 }
 // process data
 function calc() {
+  // for graph
+  let xPoints = [];
+  let yPoints = [];
   const velocityValue = parseInt(velocityElement.value);
   const alphaInDegreesValue = parseInt(alphaInDegreesElement.value);
   if (
@@ -54,6 +54,7 @@ function calc() {
     !checkValidInput(velocityValue, alphaInDegreesValue)
   )
     return;
+  // converte to radian
   const alphaInRadiansValue =
     (parseFloat(alphaInDegreesValue) * Math.PI) / 180.0;
   const timeInAir =
@@ -71,10 +72,10 @@ function calc() {
       2
     ) /
     (2 * 9.81);
-  const numberOfDataPoints = 10;
-  const timeStamp = timeInAir / numberOfDataPoints;
+  let numberOfDataPointsValue = getDataPointsNumber();
+  const timeStamp = timeInAir / numberOfDataPointsValue;
   let currentDataPoint = 0;
-  for (let i = 0; i <= numberOfDataPoints; i++) {
+  for (let i = 0; i <= numberOfDataPointsValue; i++) {
     const xPoint =
       velocityValue * Math.cos(alphaInRadiansValue) * currentDataPoint;
     const yPoint =
@@ -87,9 +88,16 @@ function calc() {
   createTable(timeInAir, distance, maxHeight);
   document.getElementById("calc").addEventListener("click", () => {
     showTable();
-    createChart();
+    createChart(xPoints, yPoints);
     animation();
   });
+}
+function getDataPointsNumber() {
+  const numberOfDataPointsElement = document.getElementById(
+    "number-of-data-points-selct"
+  );
+  const numberOfDataPointsValue = parseInt(numberOfDataPointsElement.value);
+  return numberOfDataPointsValue;
 }
 // clear input boxes and output elements
 function clear() {
@@ -122,7 +130,7 @@ function createTable(timeInAir, distance, maxHeight) {
 function showTable() {
   document.getElementById("results-container").style.display = "block";
 }
-function createChart() {
+function createChart(xPoints, yPoints) {
   const trace = {
     x: xPoints,
     y: yPoints,
@@ -140,7 +148,7 @@ function createChart() {
     },
   };
   const update = {
-    height: 250,
+    height: 230,
   };
   Plotly.newPlot("chart", data, layout);
   Plotly.relayout("chart", update);

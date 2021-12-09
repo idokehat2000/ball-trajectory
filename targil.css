@@ -97,7 +97,7 @@ button:hover {
   color: white;
 }
 #buttons {
-  padding-left: 45px;
+  padding-left: 40px;
 }
 #results {
   font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
@@ -144,4 +144,15 @@ button:hover {
 }
 .results > div {
   width: 100%;
+}
+#number-of-data-points {
+  color: rgb(255, 255, 255);
+  text-shadow: 4px 8px 9px #000000;
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+    "Lucida Sans", Arial, sans-serif;
+  font-variant: small-caps;
+  padding-left: 40px;
+}
+select:hover {
+  width: 50px;
 }
